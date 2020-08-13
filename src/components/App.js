@@ -1,52 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SearchBar from './SearchBar';
 import VideoList from './VideoList';
 import VideoDetail from './VideoDetail';
-import youtube, { baseParams } from '../apis/youtube';
+import useVideos from '../hooks/useVideos';
 
-class App extends React.Component {
-  state = {
-    videos: [],
-    selectedVideo: null
-  };
+const App = () => {
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [videos, search] = useVideos('Painting');
 
-  componentDidMount() {
-    this.onTermSubmit('Hello world');
-  }
+  useEffect(() => {
+    setSelectedVideo(videos[0]);
+  }, [videos]);
 
-  onTermSubmit = async (term) => {
-    const res = await youtube.get('/search', {
-      params: {
-        ...baseParams,
-        q: term
-      }
-    });
-    this.setState({
-      selectedVideo: res.data.items[0],
-      videos: res.data.items
-    });
-  };
-
-  onVideoSelect = (video) => {
-    this.setState({ selectedVideo: video });
-  };
-
-  render() {
-    return (
-      <div className="ui container">
-        <SearchBar onTermSubmit={this.onTermSubmit} />
-        <div className="ui two column stackable grid">
-          <div className="ten wide column">
-            <VideoDetail video={this.state.selectedVideo} />
-          </div>
-          <VideoList
-            onVideoSelect={this.onVideoSelect}
-            videos={this.state.videos}
-          />
+  return (
+    <div className="ui container">
+      <SearchBar onFormSubmit={search} />
+      <div className="ui two column stackable grid">
+        <div className="ten wide column">
+          <VideoDetail video={selectedVideo} />
         </div>
+        <VideoList onVideoSelect={setSelectedVideo} videos={videos} />
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default App;
